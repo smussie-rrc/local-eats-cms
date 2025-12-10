@@ -1,12 +1,9 @@
 <?php
 require('connect.php');
 
-echo "Connected OK!<br>";
-
 
 $sort = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 $allowed_sorts = ['name', 'created_at', 'updated_at'];
-
 if (!in_array($sort, $allowed_sorts)) {
     $sort = 'name';
 }
@@ -15,19 +12,15 @@ if (!in_array($sort, $allowed_sorts)) {
 $filter = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
 
 $sql = "SELECT * FROM restaurants";
-
 if ($filter) {
     $sql .= " WHERE category_id = :filter";
 }
-
 $sql .= " ORDER BY $sort";
 
 $stmt = $db->prepare($sql);
-
 if ($filter) {
     $stmt->bindValue(':filter', $filter, PDO::PARAM_INT);
 }
-
 $stmt->execute();
 $restaurants = $stmt->fetchAll();
 
@@ -42,51 +35,58 @@ $categories = $catStmt->fetchAll();
 <html>
 <head>
     <title>Local Eats</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
 
-<h1>Local Eats</h1>
+<nav>
+    <a href="index.php">Home</a>
+    <a href="create.php">Add Restaurant</a>
+</nav>
 
-<p><a href="create.php">Add New Restaurant</a></p>
+<div class="container">
 
-<h3>Sort By:</h3>
-<a href="index.php?sort=name">Name</a> |
-<a href="index.php?sort=created_at">Created</a> |
-<a href="index.php?sort=updated_at">Updated</a>
+    <h1>Local Eats</h1>
 
+    <h3>Sort By:</h3>
+    <a href="index.php?sort=name">Name</a> |
+    <a href="index.php?sort=created_at">Created</a> |
+    <a href="index.php?sort=updated_at">Updated</a>
 
-<h3>Filter by Category:</h3>
-<form method="get">
-    <select name="category">
-        <option value="">All</option>
-        <?php foreach ($categories as $c): ?>
-            <option value="<?= $c['category_id'] ?>"
-                <?= ($filter == $c['category_id']) ? 'selected' : '' ?>>
-                <?= htmlspecialchars($c['category_name']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
+    <h3>Filter by Category:</h3>
+    <form method="get">
+        <select name="category">
+            <option value="">All</option>
+            <?php foreach ($categories as $c): ?>
+                <option value="<?= $c['category_id'] ?>"
+                    <?= ($filter == $c['category_id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($c['category_name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
-    <input type="hidden" name="sort" value="<?= $sort ?>">
+        <input type="hidden" name="sort" value="<?= $sort ?>">
+        <button type="submit">Apply</button>
+    </form>
 
-    <button type="submit">Apply</button>
-</form>
+    <p><a href="create.php">Add New Restaurant</a></p>
 
+    <ul>
+    <?php foreach($restaurants as $r): ?>
+        <li>
+            <?= htmlspecialchars($r['name']) ?>
+            | <a href="show.php?id=<?= $r['restaurant_id'] ?>">View</a>
+            | <a href="edit.php?id=<?= $r['restaurant_id'] ?>">Edit</a>
+            | <a href="delete.php?id=<?= $r['restaurant_id'] ?>"
+                onclick="return confirm('Delete this restaurant?')">
+                Delete
+              </a>
+        </li>
+    <?php endforeach; ?>
+    </ul>
 
-<ul>
-<?php foreach($restaurants as $r): ?>
-    <li>
-        <?= htmlspecialchars($r['name']) ?>
-        | <a href="show.php?id=<?= $r['restaurant_id'] ?>">View</a>
-        | <a href="edit.php?id=<?= $r['restaurant_id'] ?>">Edit</a>
-        | <a href="delete.php?id=<?= $r['restaurant_id'] ?>"
-             onclick="return confirm('Delete this restaurant?')">
-            Delete
-          </a>
-    </li>
-<?php endforeach; ?>
-</ul>
+</div>
 
 </body>
 </html>

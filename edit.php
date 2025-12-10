@@ -1,26 +1,110 @@
 <?php
 require('connect.php');
-echo "Connected OK!<br>";
 
 
-$sort = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_STRING);
-
-$allowed = ['name', 'created_at', 'updated_at'];
-if (!in_array($sort, $allowed)) {
-    $sort = 'name'; 
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$id) {
+    header('Location: index.php');
+    exit;
 }
 
 
-$query = "SELECT * FROM restaurants ORDER BY $sort";
-$statement = $db->prepare($query);
-$statement->execute();
-$restaurants = $statement->fetchAll();
+$query = "SELECT * FROM restaurants WHERE restaurant_id = :id";
+$stmt = $db->prepare($query);
+$stmt->bindValue(':id', $id, PDO::PARAM_INT);
+$stmt->execute();
+$restaurant = $stmt->fetch();
+
+
+$catQuery = "SELECT * FROM categories ORDER BY category_name";
+$catStmt = $db->prepare($catQuery);
+$catStmt->execute();
+$categories = $catStmt->fetchAll();
+
+
+if ($_POST) {
+
+    $update = "UPDATE restaurants
+               SET name = :name,
+                   description = :description,
+                   address = :address,
+                   phone_number = :phone_number,
+                   email = :email,
+                   website = :website,
+                   category_id = :category_id
+               WHERE restaurant_id = :id";
+
+    $stmt = $db->prepare($update);
+    $stmt->bindValue(':name', $_POST['name']);
+    $stmt->bindValue(':description', $_POST['description']);
+    $stmt->bindValue(':address', $_POST['address']);
+    $stmt->bindValue(':phone_number', $_POST['phone_number']);
+    $stmt->bindValue(':email', $_POST['email']);
+    $stmt->bindValue(':website', $_POST['website']);
+    $stmt->bindValue(':category_id', $_POST['category_id'], PDO::PARAM_INT);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    header("Location: show.php?id=$id");
+    exit;
+}
 ?>
 
-<h1>Local Eats</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Restaurant</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
 
-<p>
-    Sort by:
-    <a href="index.php?sort=name">Name</a> |
-    <a href="index.php?sort=created_at">Date Created</a> |
-    <a href="index.php?sort=u
+<body>
+
+<nav>
+    <a href="index.php">Home</a>
+    <a href="create.php">Add Restaurant</a>
+</nav>
+
+<div class="container">
+
+    <h1>Edit Restaurant</h1>
+
+    <form method="post">
+
+        <label>Name</label>
+        <input name="name" value="<?= htmlspecialchars($restaurant['name']) ?>" required>
+
+        <label>Description</label>
+        <textarea name="description" required><?= htmlspecialchars($restaurant['description']) ?></textarea>
+
+        <label>Address</label>
+        <input name="address" value="<?= htmlspecialchars($restaurant['address']) ?>">
+
+        <label>Phone Number</label>
+        <input name="phone_number" value="<?= htmlspecialchars($restaurant['phone_number']) ?>">
+
+        <label>Email</label>
+        <input name="email" value="<?= htmlspecialchars($restaurant['email']) ?>">
+
+        <label>Website</label>
+        <input name="website" value="<?= htmlspecialchars($restaurant['website']) ?>">
+
+        <label>Category</label>
+        <select name="category_id" required>
+            <?php foreach ($categories as $c): ?>
+                <option value="<?= $c['category_id'] ?>"
+                    <?= ($restaurant['category_id'] == $c['category_id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($c['category_name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+        <button type="submit">Save Changes</button>
+
+    </form>
+
+    <p><a href="show.php?id=<?= $id ?>">← Cancel</a></p>
+
+</div>
+
+</body>
+</html>

@@ -1,24 +1,28 @@
 <?php
 require('connect.php');
 
+// Fetch categories for dropdown
+$catQuery = "SELECT * FROM categories ORDER BY category_name";
+$catStmt = $db->prepare($catQuery);
+$catStmt->execute();
+$categories = $catStmt->fetchAll();
+
+// Insert restaurant on POST
 if ($_POST) {
 
-    $query = "INSERT INTO restaurants
-              (name, description, address, phone_number, email, website, category_id)
-              VALUES
-              (:name, :description, :address, :phone_number, :email, :website, :category_id)";
+    $query = "INSERT INTO restaurants (name, description, address, phone_number, email, website, category_id) 
+              VALUES (:name, :description, :address, :phone_number, :email, :website, :category_id)";
 
-    $statement = $db->prepare($query);
+    $stmt = $db->prepare($query);
+    $stmt->bindValue(':name', $_POST['name']);
+    $stmt->bindValue(':description', $_POST['description']);
+    $stmt->bindValue(':address', $_POST['address']);
+    $stmt->bindValue(':phone_number', $_POST['phone_number']);
+    $stmt->bindValue(':email', $_POST['email']);
+    $stmt->bindValue(':website', $_POST['website']);
+    $stmt->bindValue(':category_id', $_POST['category_id'], PDO::PARAM_INT);
 
-    $statement->bindValue(':name', $_POST['name']);
-    $statement->bindValue(':description', $_POST['description']);
-    $statement->bindValue(':address', $_POST['address']);
-    $statement->bindValue(':phone_number', $_POST['phone_number']);
-    $statement->bindValue(':email', $_POST['email']);
-    $statement->bindValue(':website', $_POST['website']);
-    $statement->bindValue(':category_id', $_POST['category_id']);
-
-    $statement->execute();
+    $stmt->execute();
 
     header("Location: index.php");
     exit;
@@ -29,49 +33,55 @@ if ($_POST) {
 <html>
 <head>
     <title>Add Restaurant</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
-<h1>Add Restaurant</h1>
+<nav>
+    <a href="index.php">Home</a>
+    <a href="create.php">Add Restaurant</a>
+</nav>
 
-<form method="post">
+<div class="container">
 
-    <label>Name</label><br>
-    <input name="name" required><br><br>
+    <h1>Add Restaurant</h1>
 
-    <label>Description</label><br>
-    <textarea name="description" required></textarea><br><br>
+    <form method="post">
 
-    <label>Address</label><br>
-    <input name="address"><br><br>
+        <label>Name</label>
+        <input name="name" required>
 
-    <label>Phone</label><br>
-    <input name="phone_number"><br><br>
+        <label>Description</label>
+        <textarea name="description" required></textarea>
 
-    <label>Email</label><br>
-    <input name="email"><br><br>
+        <label>Address</label>
+        <input name="address">
 
-    <label>Website</label><br>
-    <input name="website"><br><br>
+        <label>Phone Number</label>
+        <input name="phone_number">
 
-    <label>Category</label><br>
-    <select name="category_id">
-        <?php
-        $catQuery = "SELECT * FROM categories ORDER BY category_name";
-        $catStmt = $db->prepare($catQuery);
-        $catStmt->execute();
-        $categories = $catStmt->fetchAll();
+        <label>Email</label>
+        <input name="email">
 
-        foreach($categories as $c): ?>
-            <option value="<?= $c['category_id'] ?>">
-                <?= htmlspecialchars($c['category_name']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br><br>
+        <label>Website</label>
+        <input name="website">
 
-    <button type="submit">Save</button>
+        <label>Category</label>
+        <select name="category_id" required>
+            <option value="">Select a category</option>
+            <?php foreach ($categories as $c): ?>
+                <option value="<?= $c['category_id'] ?>">
+                    <?= htmlspecialchars($c['category_name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
-</form>
+        <button type="submit">Save</button>
+
+    </form>
+
+</div>
 
 </body>
 </html>

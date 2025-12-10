@@ -1,14 +1,16 @@
 <?php
 require('connect.php');
 
-$restaurant_id = filter_input(INPUT_GET, 'restaurant_id', FILTER_VALIDATE_INT);
 
+$restaurant_id = filter_input(INPUT_GET, 'restaurant_id', FILTER_VALIDATE_INT);
 if (!$restaurant_id) {
     header("Location: index.php");
     exit;
 }
 
+
 if ($_POST) {
+
     $query = "INSERT INTO menus (restaurant_id, item_name, item_description, price)
               VALUES (:restaurant_id, :item_name, :item_description, :price)";
 
@@ -25,17 +27,41 @@ if ($_POST) {
 }
 ?>
 
-<h1>Add Menu Item</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Menu Item</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
 
-<form method="post">
-    <label>Name</label><br>
-    <input name="item_name" required><br><br>
+<body>
 
-    <label>Description</label><br>
-    <textarea name="item_description"></textarea><br><br>
+<nav>
+    <a href="index.php">Home</a>
+    <a href="create.php">Add Restaurant</a>
+</nav>
 
-    <label>Price</label><br>
-    <input name="price" type="number" step="0.01" required><br><br>
+<div class="container">
 
-    <button type="submit">Save Item</button>
-</form>
+    <h1>Add Menu Item</h1>
+
+    <form method="post">
+
+        <label>Item Name</label>
+        <input name="item_name" required>
+
+        <label>Description</label>
+        <textarea name="item_description"></textarea>
+
+        <label>Price</label>
+        <input name="price" type="number" step="0.01" required>
+
+        <button type="submit">Save</button>
+    </form>
+
+    <p><a href="show.php?id=<?= $restaurant_id ?>">← Back to Restaurant</a></p>
+
+</div>
+
+</body>
+</html>
