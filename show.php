@@ -48,5 +48,35 @@ $restaurant = $stmt->fetch();
 
 <p><a href="index.php">← Back to list</a></p>
 
+<?php
+
+$menuQuery = "SELECT * FROM menus WHERE restaurant_id = :id";
+$menuStmt = $db->prepare($menuQuery);
+$menuStmt->bindValue(':id', $id, PDO::PARAM_INT);
+$menuStmt->execute();
+$menuItems = $menuStmt->fetchAll();
+?>
+
+<p>
+    <a href="menu_create.php?restaurant_id=<?= $id ?>">Add Menu Item</a>
+</p>
+
+<h2>Menu Items</h2>
+
+<?php if ($menuItems): ?>
+    <ul>
+        <?php foreach ($menuItems as $m): ?>
+            <li>
+                <strong><?= htmlspecialchars($m['item_name']) ?></strong>
+                — $<?= number_format($m['price'], 2) ?><br>
+                <small><?= htmlspecialchars($m['item_description']) ?></small>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+<?php else: ?>
+    <p>No menu items yet.</p>
+<?php endif; ?>
+
+
 </body>
 </html>
