@@ -1,36 +1,37 @@
 <?php
 require('connect.php');
 
-// Make sure we have a valid ID
-$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$id) {
     header("Location: index.php");
     exit;
 }
 
-// Load restaurant
+
 $query = "SELECT * FROM restaurants WHERE restaurant_id = :id";
 $stmt = $db->prepare($query);
 $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 $stmt->execute();
 $restaurant = $stmt->fetch();
-
-if (!$restaurant) {
-    echo "<p>Restaurant not found.</p>";
-    exit;
-}
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
     <title><?= htmlspecialchars($restaurant['name']) ?></title>
 </head>
 <body>
 
 <h1><?= htmlspecialchars($restaurant['name']) ?></h1>
+
+
+<?php if (!empty($restaurant['image_url'])): ?>
+    <img src="uploads/<?= htmlspecialchars($restaurant['image_url']) ?>" 
+         alt="<?= htmlspecialchars($restaurant['name']) ?>" 
+         style="max-width:300px;">
+<?php endif; ?>
+
 
 <p><strong>Description:</strong><br>
 <?= nl2br(htmlspecialchars($restaurant['description'])) ?></p>
@@ -39,15 +40,13 @@ if (!$restaurant) {
 <p><strong>Phone:</strong> <?= htmlspecialchars($restaurant['phone_number']) ?></p>
 <p><strong>Email:</strong> <?= htmlspecialchars($restaurant['email']) ?></p>
 
-<?php if (!empty($restaurant['website'])): ?>
 <p><strong>Website:</strong>
-    <a href="<?= htmlspecialchars($restaurant['website']) ?>" target="_blank">
+    <a href="<?= htmlspecialchars($restaurant['website']) ?>">
         <?= htmlspecialchars($restaurant['website']) ?>
     </a>
 </p>
-<?php endif; ?>
 
-<p><a href="index.php">⬅ Back to list</a></p>
+<p><a href="index.php">← Back to list</a></p>
 
 </body>
 </html>

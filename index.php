@@ -1,21 +1,83 @@
-<?php require('connect.php'); ?>
+<?php
+require('connect.php');
+
+echo "Connected OK!<br>";
+
+
+$sort = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$allowed_sorts = ['name', 'created_at', 'updated_at'];
+
+if (!in_array($sort, $allowed_sorts)) {
+    $sort = 'name';
+}
+
+
+$filter = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
+
+$sql = "SELECT * FROM restaurants";
+
+if ($filter) {
+    $sql .= " WHERE category_id = :filter";
+}
+
+$sql .= " ORDER BY $sort";
+
+$stmt = $db->prepare($sql);
+
+if ($filter) {
+    $stmt->bindValue(':filter', $filter, PDO::PARAM_INT);
+}
+
+$stmt->execute();
+$restaurants = $stmt->fetchAll();
+
+
+$catQuery = "SELECT * FROM categories ORDER BY category_name";
+$catStmt = $db->prepare($catQuery);
+$catStmt->execute();
+$categories = $catStmt->fetchAll();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Eats</title>
+</head>
+
+<body>
 
 <h1>Local Eats</h1>
 
 <p><a href="create.php">Add New Restaurant</a></p>
 
-<?php
-$query = "SELECT * FROM restaurants ORDER BY name";
-$statement = $db->prepare($query);
-$statement->execute();
-$restaurants = $statement->fetchAll();
-?>
+<h3>Sort By:</h3>
+<a href="index.php?sort=name">Name</a> |
+<a href="index.php?sort=created_at">Created</a> |
+<a href="index.php?sort=updated_at">Updated</a>
+
+
+<h3>Filter by Category:</h3>
+<form method="get">
+    <select name="category">
+        <option value="">All</option>
+        <?php foreach ($categories as $c): ?>
+            <option value="<?= $c['category_id'] ?>"
+                <?= ($filter == $c['category_id']) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($c['category_name']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+
+    <input type="hidden" name="sort" value="<?= $sort ?>">
+
+    <button type="submit">Apply</button>
+</form>
+
 
 <ul>
 <?php foreach($restaurants as $r): ?>
     <li>
         <?= htmlspecialchars($r['name']) ?>
-
         | <a href="show.php?id=<?= $r['restaurant_id'] ?>">View</a>
         | <a href="edit.php?id=<?= $r['restaurant_id'] ?>">Edit</a>
         | <a href="delete.php?id=<?= $r['restaurant_id'] ?>"
@@ -25,3 +87,6 @@ $restaurants = $statement->fetchAll();
     </li>
 <?php endforeach; ?>
 </ul>
+
+</body>
+</html>
