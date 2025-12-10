@@ -1,3 +1,11 @@
+<head>
+    <title>Local Eats</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
 <?php
 require('connect.php');
 
@@ -10,20 +18,32 @@ if (!in_array($sort, $allowed_sorts)) {
 
 
 $filter = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
+$search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-$sql = "SELECT * FROM restaurants";
-if ($filter) {
-    $sql .= " WHERE category_id = :filter";
+$sql = "SELECT * FROM restaurants WHERE 1=1";
+
+if ($search) {
+    $sql .= " AND name LIKE :search";
 }
+
+if ($filter) {
+    $sql .= " AND category_id = :filter";
+}
+
 $sql .= " ORDER BY $sort";
 
 $stmt = $db->prepare($sql);
+
 if ($filter) {
     $stmt->bindValue(':filter', $filter, PDO::PARAM_INT);
 }
+
+if ($search) {
+    $stmt->bindValue(':search', "%$search%");
+}
+
 $stmt->execute();
 $restaurants = $stmt->fetchAll();
-
 
 $catQuery = "SELECT * FROM categories ORDER BY category_name";
 $catStmt = $db->prepare($catQuery);
@@ -69,6 +89,17 @@ $categories = $catStmt->fetchAll();
         <input type="hidden" name="sort" value="<?= $sort ?>">
         <button type="submit">Apply</button>
     </form>
+
+    <h3>Search</h3>
+
+<form method="get">
+    <input type="text" name="search" placeholder="Search restaurants..."
+           value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+    <button type="submit">Search</button>
+
+    <input type="hidden" name="category" value="<?= htmlspecialchars($_GET['category'] ?? '') ?>">
+</form>
+
 
     <p><a href="create.php">Add New Restaurant</a></p>
 

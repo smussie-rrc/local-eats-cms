@@ -1,17 +1,41 @@
+<head>
+    <title>Local Eats</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
 <?php
 require('connect.php');
 
-// Fetch categories for dropdown
+
 $catQuery = "SELECT * FROM categories ORDER BY category_name";
 $catStmt = $db->prepare($catQuery);
 $catStmt->execute();
 $categories = $catStmt->fetchAll();
 
-// Insert restaurant on POST
+$imagePath = null;
+
+if (!empty($_FILES['image']['name'])) {
+
+    $filename = basename($_FILES['image']['name']);
+    $target = 'uploads/' . $filename;
+
+
+    if (getimagesize($_FILES['image']['tmp_name'])) {
+        move_uploaded_file($_FILES['image']['tmp_name'], $target);
+        $imagePath = $target;
+    }
+}
+
 if ($_POST) {
 
-    $query = "INSERT INTO restaurants (name, description, address, phone_number, email, website, category_id) 
-              VALUES (:name, :description, :address, :phone_number, :email, :website, :category_id)";
+    $query = "INSERT INTO restaurants 
+    (name, description, address, phone_number, email, website, category_id, image_url) 
+    VALUES 
+    (:name, :description, :address, :phone_number, :email, :website, :category_id, :image_url)";
+
 
     $stmt = $db->prepare($query);
     $stmt->bindValue(':name', $_POST['name']);
@@ -21,12 +45,14 @@ if ($_POST) {
     $stmt->bindValue(':email', $_POST['email']);
     $stmt->bindValue(':website', $_POST['website']);
     $stmt->bindValue(':category_id', $_POST['category_id'], PDO::PARAM_INT);
+    $stmt->bindValue(':image_url', $imagePath);
 
     $stmt->execute();
 
     header("Location: index.php");
     exit;
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -47,7 +73,7 @@ if ($_POST) {
 
     <h1>Add Restaurant</h1>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
 
         <label>Name</label>
         <input name="name" required>
@@ -66,6 +92,10 @@ if ($_POST) {
 
         <label>Website</label>
         <input name="website">
+
+        <label>Image</label>
+        <input type="file" name="image">
+
 
         <label>Category</label>
         <select name="category_id" required>

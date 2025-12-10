@@ -1,3 +1,11 @@
+<head>
+    <title>Local Eats</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
 <?php
 require('connect.php');
 
@@ -43,8 +51,9 @@ $menuItems = $menuStmt->fetchAll();
     <p><?= nl2br(htmlspecialchars($restaurant['description'])) ?></p>
 
     <?php if (!empty($restaurant['image_url'])): ?>
-        <img src="uploads/<?= htmlspecialchars($restaurant['image_url']) ?>"
-             style="max-width: 300px; border:1px solid #ccc;">
+        <img src="<?= htmlspecialchars($restaurant['image_url']) ?>"
+     style="max-width: 300px; border:1px solid #ccc;">
+
     <?php endif; ?>
 
     <p>
