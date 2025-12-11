@@ -62,12 +62,12 @@ $categories = $catStmt->fetchAll();
 
 if ($_POST) {
 
-    $removeImage = isset($_POST['remove_image']);   // did user check "remove"?
-    $newImagePath = $restaurant['image_url'];       // default = keep current image
+    $removeImage = isset($_POST['remove_image']);  
+    $newImagePath = $restaurant['image_url'];     
 
     if (!empty($_FILES['image']['name'])) {
 
-        // delete old image
+        
         if (!empty($restaurant['image_url']) && file_exists($restaurant['image_url'])) {
             unlink($restaurant['image_url']);
         }
