@@ -37,12 +37,25 @@ $menuItems = $menuStmt->fetchAll();
 
 <body>
 
-<nav>
-    <a href="index.php">Home</a>
+<nav class="p-3 bg-dark text-white">
 
-    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1): ?>
-        <a href="create.php">Add Restaurant</a>
+    <a href="index.php" class="text-white me-3">Home</a>
+
+    <?php if (!empty($_SESSION['user_id'])): ?>
+        <a href="create.php" class="text-white me-3">Add Restaurant</a>
     <?php endif; ?>
+
+    <span class="float-end">
+
+        <?php if (!isset($_SESSION['user_id'])): ?>
+            <a href="login.php" class="text-white">Login</a>
+        <?php else: ?>
+            <span class="me-2">Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+            <a href="logout.php" class="text-white">Logout</a>
+        <?php endif; ?>
+
+    </span>
+
 </nav>
 
 <div class="container">

@@ -53,6 +53,11 @@ $catStmt = $db->prepare($catQuery);
 $catStmt->execute();
 $categories = $catStmt->fetchAll();
 
+if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] != 1) {
+    header("Location: index.php");
+    exit;
+}
+
 $imagePath = null;
 
 if (!empty($_FILES['image']['name'])) {
