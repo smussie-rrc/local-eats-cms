@@ -107,7 +107,7 @@ $categories = $catStmt->fetchAll();
     <?php foreach($restaurants as $r): ?>
         <li>
             <?= htmlspecialchars($r['name']) ?>
-            | <a href="show.php?id=<?= $r['restaurant_id'] ?>">View</a>
+            | <a href="restaurant.php?id=<?= $r['restaurant_id'] ?>">View</a>
             | <a href="edit.php?id=<?= $r['restaurant_id'] ?>">Edit</a>
             | <a href="delete.php?id=<?= $r['restaurant_id'] ?>"
                 onclick="return confirm('Delete this restaurant?')">
