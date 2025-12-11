@@ -1,35 +1,34 @@
 <?php
+session_start();
 require('connect.php');
 
-$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-
-if (!$id) {
-    header("Location: index.php");
+if (!isset($_SESSION['user_id']) || $_SESSION['is_admin'] != 1) {
+    header("Location: login.php");
     exit;
 }
 
-$query = "SELECT image_url FROM restaurants WHERE restaurant_id = :id";
-$stmt = $db->prepare($query);
-$stmt->bindValue(':id', $id, PDO::PARAM_INT);
-$stmt->execute();
-$restaurant = $stmt->fetch();
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-if ($restaurant && !empty($restaurant['image_url'])) {
-    if (file_exists($restaurant['image_url'])) {
-        unlink($restaurant['image_url']); 
+if ($id) {
+
+    $select = "SELECT image_url FROM restaurants WHERE restaurant_id = :id";
+    $stmt = $db->prepare($select);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $restaurant = $stmt->fetch();
+
+    if ($restaurant) {
+
+        if (!empty($restaurant['image_url']) && file_exists($restaurant['image_url'])) {
+            unlink($restaurant['image_url']);
+        }
+
+        $delete = "DELETE FROM restaurants WHERE restaurant_id = :id";
+        $stmt = $db->prepare($delete);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
     }
 }
 
-$menuDelete = "DELETE FROM menus WHERE restaurant_id = :id";
-$stmtMenu = $db->prepare($menuDelete);
-$stmtMenu->bindValue(':id', $id, PDO::PARAM_INT);
-$stmtMenu->execute();
-
-$delete = "DELETE FROM restaurants WHERE restaurant_id = :id";
-$stmtDelete = $db->prepare($delete);
-$stmtDelete->bindValue(':id', $id, PDO::PARAM_INT);
-$stmtDelete->execute();
-
 header("Location: index.php");
 exit;
-?>
