@@ -1,7 +1,6 @@
 <?php
 require('connect.php');
 
-// Insert new category if form submitted
 if ($_POST && isset($_POST['category_name'])) {
     $query = "INSERT INTO categories (category_name) VALUES (:name)";
     $stmt = $db->prepare($query);
@@ -11,7 +10,6 @@ if ($_POST && isset($_POST['category_name'])) {
     exit;
 }
 
-// Get existing categories
 $query = "SELECT * FROM categories ORDER BY category_name";
 $stmt = $db->prepare($query);
 $stmt->execute();
