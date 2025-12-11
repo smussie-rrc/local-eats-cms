@@ -31,14 +31,12 @@ $menuItems = $menuStmt->fetchAll();
     <title><?= htmlspecialchars($restaurant['name']) ?></title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
 
 <nav class="p-3 bg-dark text-white">
-
     <a href="index.php" class="text-white me-3">Home</a>
 
     <?php if (!empty($_SESSION['user_id'])): ?>
@@ -46,7 +44,6 @@ $menuItems = $menuStmt->fetchAll();
     <?php endif; ?>
 
     <span class="float-end">
-
         <?php if (!isset($_SESSION['user_id'])): ?>
             <a href="login.php" class="text-white me-3">Login</a>
             <a href="register.php" class="text-white me-3">Register</a>
@@ -54,12 +51,10 @@ $menuItems = $menuStmt->fetchAll();
             <span class="me-2">Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
             <a href="logout.php" class="text-white">Logout</a>
         <?php endif; ?>
-
     </span>
-
 </nav>
 
-<div class="container">
+<div class="container mt-4">
 
     <h1><?= htmlspecialchars($restaurant['name']) ?></h1>
 
@@ -80,13 +75,13 @@ $menuItems = $menuStmt->fetchAll();
             </a>
     </p>
 
-    <p>
-        <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1): ?>
+    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1): ?>
+        <p>
             <a href="menu_create.php?restaurant_id=<?= $id ?>">Add Menu Item</a> |
             <a href="edit.php?id=<?= $id ?>">Edit</a> |
             <a href="delete.php?id=<?= $id ?>" onclick="return confirm('Are you sure?')">Delete</a>
-        <?php endif; ?>
-    </p>
+        </p>
+    <?php endif; ?>
 
     <h2>Menu Items</h2>
 
@@ -104,7 +99,61 @@ $menuItems = $menuStmt->fetchAll();
         <p>No menu items yet.</p>
     <?php endif; ?>
 
-    <p><a href="index.php">← Back to list</a></p>
+    <hr>
+
+    <h2>Comments</h2>
+
+    <?php
+    $commentQuery = "
+        SELECT c.*, u.username 
+        FROM comments c
+        JOIN users u ON c.user_id = u.user_id
+        WHERE c.restaurant_id = :id
+        ORDER BY c.created_at DESC
+    ";
+
+    $commentStmt = $db->prepare($commentQuery);
+    $commentStmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $commentStmt->execute();
+    $comments = $commentStmt->fetchAll();
+    ?>
+
+    <?php if ($comments): ?>
+        <ul class="list-group mb-4">
+            <?php foreach ($comments as $c): ?>
+                <li class="list-group-item">
+                    <strong><?= htmlspecialchars($c['username']) ?></strong>
+                    <small class="text-muted">(<?= $c['created_at'] ?>)</small><br>
+                    <?= nl2br(htmlspecialchars($c['comment_text'])) ?>
+
+                    <?php if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1): ?>
+                        <a href="comment_delete.php?id=<?= $c['comment_id'] ?>&restaurant=<?= $id ?>"
+                           class="text-danger float-end"
+                           onclick="return confirm('Delete this comment?')">Delete</a>
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <p>No comments yet.</p>
+    <?php endif; ?>
+
+    <hr>
+
+    <?php if (!empty($_SESSION['user_id'])): ?>
+        <h3>Add a Comment</h3>
+
+        <form method="post" action="comment_add.php">
+            <input type="hidden" name="restaurant_id" value="<?= $id ?>">
+            <textarea name="comment_text" class="form-control" required></textarea>
+            <button class="btn btn-primary mt-2">Post Comment</button>
+        </form>
+
+    <?php else: ?>
+        <p><a href="login.php">Login</a> to post a comment.</p>
+    <?php endif; ?>
+
+    <p class="mt-4"><a href="index.php">← Back to list</a></p>
 
 </div>
 
