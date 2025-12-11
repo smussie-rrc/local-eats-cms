@@ -51,10 +51,18 @@ $menuItems = $menuStmt->fetchAll();
     <p><?= nl2br(htmlspecialchars($restaurant['description'])) ?></p>
 
     <?php if (!empty($restaurant['image_url'])): ?>
-        <img src="<?= htmlspecialchars($restaurant['image_url']) ?>"
-     style="max-width: 300px; border:1px solid #ccc;">
+    <img src="<?= htmlspecialchars($restaurant['image_url']) ?>"
+         style="max-width: 300px; border:1px solid #ccc;">
 
-    <?php endif; ?>
+    <p>
+        <a href="delete_image.php?id=<?= $restaurant['restaurant_id'] ?>"
+           onclick="return confirm('Remove this image?')">
+           Remove Image
+        </a>
+    </p>
+
+<?php endif; ?>
+
 
     <p>
         <strong>Address:</strong> <?= htmlspecialchars($restaurant['address']) ?><br>

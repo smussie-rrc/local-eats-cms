@@ -1,14 +1,29 @@
-<head>
-    <title>Local Eats</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-
 <?php
 require('connect.php');
 
+function resizeImage($file, $maxWidth = 600)
+{
+    $source = imagecreatefromstring(file_get_contents($file));
+    $width = imagesx($source);
+    $height = imagesy($source);
+
+    if ($width <= $maxWidth) {
+        return $source; 
+    }
+
+    $newWidth = $maxWidth;
+    $newHeight = floor($height * ($maxWidth / $width));
+
+    $resized = imagecreatetruecolor($newWidth, $newHeight);
+    imagecopyresampled(
+        $resized, $source,
+        0, 0, 0, 0,
+        $newWidth, $newHeight,
+        $width, $height
+    );
+
+    return $resized;
+}
 
 $catQuery = "SELECT * FROM categories ORDER BY category_name";
 $catStmt = $db->prepare($catQuery);
@@ -22,9 +37,12 @@ if (!empty($_FILES['image']['name'])) {
     $filename = basename($_FILES['image']['name']);
     $target = 'uploads/' . $filename;
 
-
     if (getimagesize($_FILES['image']['tmp_name'])) {
-        move_uploaded_file($_FILES['image']['tmp_name'], $target);
+
+        $resized = resizeImage($_FILES['image']['tmp_name'], 600);
+
+        imagejpeg($resized, $target, 85);
+
         $imagePath = $target;
     }
 }
@@ -32,12 +50,12 @@ if (!empty($_FILES['image']['name'])) {
 if ($_POST) {
 
     $query = "INSERT INTO restaurants 
-    (name, description, address, phone_number, email, website, category_id, image_url) 
-    VALUES 
-    (:name, :description, :address, :phone_number, :email, :website, :category_id, :image_url)";
-
+              (name, description, address, phone_number, email, website, category_id, image_url) 
+              VALUES 
+              (:name, :description, :address, :phone_number, :email, :website, :category_id, :image_url)";
 
     $stmt = $db->prepare($query);
+
     $stmt->bindValue(':name', $_POST['name']);
     $stmt->bindValue(':description', $_POST['description']);
     $stmt->bindValue(':address', $_POST['address']);
@@ -52,13 +70,14 @@ if ($_POST) {
     header("Location: index.php");
     exit;
 }
-
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>Add Restaurant</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -95,7 +114,6 @@ if ($_POST) {
 
         <label>Image</label>
         <input type="file" name="image">
-
 
         <label>Category</label>
         <select name="category_id" required>
