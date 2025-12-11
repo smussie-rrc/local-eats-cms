@@ -64,7 +64,8 @@ if ($_POST) {
     <span class="float-end">
 
         <?php if (!isset($_SESSION['user_id'])): ?>
-            <a href="login.php" class="text-white">Login</a>
+            <a href="login.php" class="text-white me-3">Login</a>
+            <a href="register.php" class="text-white me-3">Register</a>
         <?php else: ?>
             <span class="me-2">Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
             <a href="logout.php" class="text-white">Logout</a>
@@ -73,7 +74,6 @@ if ($_POST) {
     </span>
 
 </nav>
-
 
 <div class="container mt-4">
 

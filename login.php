@@ -43,6 +43,16 @@ if ($_POST) {
 </head>
 
 <body>
+<nav class="p-3 bg-dark text-white">
+
+    <a href="index.php" class="text-white me-3">Home</a>
+
+    <span class="float-end">
+        <a href="login.php" class="text-white me-3">Login</a>
+        <a href="register.php" class="text-white me-3">Register</a>
+    </span>
+
+</nav>
 
 <div class="container mt-5" style="max-width: 450px;">
 
